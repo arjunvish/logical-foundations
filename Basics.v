@@ -1388,7 +1388,22 @@ Theorem andb_eq_orb :
   (andb b c = orb b c) ->
   b = c.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros b c H. destruct (b && c) eqn:s.
+  + destruct b.
+    - destruct c.
+      * reflexivity.
+      * rewrite <- s. simpl. reflexivity.
+    - destruct c.
+      * rewrite <- s. simpl. reflexivity.
+      * reflexivity.
+  + destruct b.
+    - destruct c.
+      * reflexivity.
+      * rewrite H. reflexivity.
+    - destruct c.
+      * rewrite H. reflexivity.
+      * reflexivity.
+  Qed.
 
 (** [] *)
 
@@ -1427,11 +1442,22 @@ Inductive bin : Type :=
         for binary numbers, and a function [bin_to_nat] to convert
         binary numbers to unary numbers. *)
 
-Fixpoint incr (m:bin) : bin
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint incr (m:bin) : bin :=
+  match m with
+  | Z => B Z
+  | A n => B n
+  | B n => A (incr n)
+end.
 
-Fixpoint bin_to_nat (m:bin) : nat
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint bin_to_nat_aux (m:bin) (weight:nat) : nat :=
+  match m with
+  | Z => O
+  | A n => bin_to_nat_aux n (weight+1)
+  | B n => (exp 2 weight) + (bin_to_nat_aux n (weight+1))
+  end.
+
+Fixpoint bin_to_nat (m:bin) : nat :=
+  bin_to_nat_aux m 0.
 
 (**    (b) Write five unit tests [test_bin_incr1], [test_bin_incr2], etc.
         for your increment and binary-to-unary functions.  (A "unit
@@ -1441,7 +1467,20 @@ Fixpoint bin_to_nat (m:bin) : nat
         then converting it to unary should yield the same result as
         first converting it to unary and then incrementing. *)
 
-(* FILL IN HERE *)
+Example test_bin_incr1: incr (Z) = (B Z).
+Proof. reflexivity. Qed.
+
+Example test_bin_incr2: incr (A (A (B Z))) = (B (A (B Z))).
+Proof. reflexivity. Qed.
+
+Example test_bin_incr3: incr (B (B (B Z))) = (A (A (A (B Z)))).
+Proof. reflexivity. Qed.
+
+Example test_bin_incr4: bin_to_nat (incr (A (B (B Z)))) = 7.
+Proof. reflexivity. Qed.
+
+Example test_bin_incr5: incr (B Z) = (A (B Z)).
+Proof. reflexivity. Qed.
 
 (* Do not modify the following line: *)
 Definition manual_grade_for_binary : option (nat*string) := None.
