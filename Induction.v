@@ -173,7 +173,7 @@ Proof.
     are specified in the second part of the [as...] clause.  The goal
     in this case becomes [S n' = (S n') + 0], which simplifies to
     [S n' = S (n' + 0)], which in turn follows from [IHn']. *)
-
+(*HERE*)
 Theorem minus_diag : forall n,
   minus n n = 0.
 Proof.
