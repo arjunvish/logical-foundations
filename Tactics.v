@@ -74,7 +74,8 @@ Theorem silly_ex :
      oddb 3 = true ->
      evenb 4 = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros H1 H2. apply H2.
+Qed.
 (** [] *)
 
 (** To use the [apply] tactic, the (conclusion of the) fact
@@ -107,7 +108,8 @@ Theorem rev_exercise1 : forall (l l' : list nat),
      l = rev l' ->
      l' = rev l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros l m H. rewrite H. symmetry. apply rev_involutive.
+Qed.
 (** [] *)
 
 (** **** Exercise: 1 star, standard, optional (apply_rewrite)  
@@ -116,7 +118,9 @@ Proof.
     [rewrite].  What are the situations where both can usefully be
     applied? *)
 
-(* FILL IN HERE 
+(* Apply tries to unify the goal with the statement of the argument 
+   to the tactic. Rewrite rewrites something in the goal using 
+   the equality that is an argument to the tactic.
 
     [] *)
 
@@ -176,7 +180,9 @@ Example trans_eq_exercise : forall (n m o p : nat),
      (n + p) = m ->
      (n + p) = (minustwo o).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m o p H1 H2. apply trans_eq with m.
+  apply H2. apply H1.
+Qed.
 (** [] *)
 
 (* ################################################################# *)
@@ -273,7 +279,9 @@ Example injection_ex3 : forall (X : Type) (x y z : X) (l j : list X),
   y :: l = x :: j ->
   x = y.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X x y z l j H1 H2. injection H1 as H11.
+  injection H2 as H21. rewrite H21. reflexivity.
+Qed.
 (** [] *)
 
 (** So much for injectivity of constructors.  What about disjointness?
@@ -345,7 +353,8 @@ Example discriminate_ex3 :
     x :: y :: l = [] ->
     x = z.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X x y z l j H. discriminate H.
+Qed.
 (** [] *)
 
 (** The injectivity of constructors allows us to reason that
@@ -420,7 +429,16 @@ Theorem plus_n_n_injective : forall n m,
      n = m.
 Proof.
   intros n. induction n as [| n'].
-  (* FILL IN HERE *) Admitted.
+  + intros m H. simpl in H. destruct m. 
+    - simpl in H. apply H. 
+    - rewrite <- plus_n_Sm in H. discriminate H.
+  + intros m H. destruct m. 
+    - simpl in H. discriminate H. 
+    - apply f_equal. apply IHn'. simpl in H. 
+      injection H as H'. rewrite <- plus_n_Sm in H'.
+      rewrite <- plus_n_Sm in H'. injection H' as H.
+      apply H.
+Qed.
 (** [] *)
 
 (* ################################################################# *)
@@ -458,7 +476,6 @@ Proof.
   - (* n = S n' *) intros eq. destruct m as [| m'] eqn:E.
     + (* m = O *) discriminate eq.
     + (* m = S m' *) apply f_equal.
-
 (** At this point, the induction hypothesis, [IHn'], does _not_ give us
     [n' = m'] -- there is an extra [S] in the way -- so the goal is
     not provable. *)
@@ -577,7 +594,15 @@ Proof.
 Theorem eqb_true : forall n m,
     n =? m = true -> n = m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n. induction n.
+  + destruct m.
+    - reflexivity.
+    - intros H. discriminate H.
+  + destruct m.
+    - intros H. discriminate H.
+    - intros H. f_equal. apply IHn. simpl in H.
+      apply H.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, advanced (eqb_true_informal)  
@@ -698,7 +723,7 @@ Proof.
   assert (H' : m = n). { apply eqb_true. apply H. }
   rewrite H'. reflexivity.
 Qed.
-
+(*HERE*)
 (** **** Exercise: 3 stars, standard, recommended (gen_dep_practice)  
 
     Prove this by induction on [l]. *)

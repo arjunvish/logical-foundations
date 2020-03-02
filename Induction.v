@@ -173,7 +173,7 @@ Proof.
     are specified in the second part of the [as...] clause.  The goal
     in this case becomes [S n' = (S n') + 0], which simplifies to
     [S n' = S (n' + 0)], which in turn follows from [IHn']. *)
-(*HERE*)
+
 Theorem minus_diag : forall n,
   minus n n = 0.
 Proof.
@@ -197,22 +197,36 @@ Proof.
 Theorem mult_0_r : forall n:nat,
   n * 0 = 0.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction n.
+  + simpl. reflexivity.
+  + simpl. rewrite IHn. reflexivity.
+Qed.
 
 Theorem plus_n_Sm : forall n m : nat,
   S (n + m) = n + (S m).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m. induction n.
+  + simpl. reflexivity.
+  + simpl. rewrite IHn. reflexivity.
+Qed. 
 
 Theorem plus_comm : forall n m : nat,
   n + m = m + n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m. induction n.
+  + simpl. induction m. 
+    - reflexivity.
+    - simpl. rewrite <- IHm. simpl. reflexivity.
+  + simpl. rewrite IHn. rewrite plus_n_Sm. reflexivity.
+Qed.
 
 Theorem plus_assoc : forall n m p : nat,
   n + (m + p) = (n + m) + p.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m p. induction n.
+  + simpl. reflexivity.
+  + simpl. rewrite IHn. reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, standard (double_plus)  
@@ -229,7 +243,11 @@ Fixpoint double (n:nat) :=
 
 Lemma double_plus : forall n, double n = n + n .
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction n.
+  + reflexivity.
+  + simpl. rewrite IHn. rewrite plus_n_Sm.
+    reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, standard, optional (evenb_S)  
@@ -244,7 +262,11 @@ Proof.
 Theorem evenb_S : forall n : nat,
   evenb (S n) = negb (evenb n).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction n.
+  + simpl. reflexivity.
+  + rewrite IHn. rewrite negb_involutive. simpl.
+    reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 1 star, standard (destruct_induction)  
@@ -252,7 +274,8 @@ Proof.
     Briefly explain the difference between the tactics [destruct]
     and [induction].
 
-(* FILL IN HERE *)
+Destruct case splits on the inductive type without giving an induction hypothesis 
+for more complex case whereas induction gives an inductive hypothesis.
 *)
 
 (* Do not modify the following line: *)
@@ -453,9 +476,27 @@ Proof.
 
     Translate your solution for [plus_comm] into an informal proof:
 
-    Theorem: Addition is commutative.
+    Theorem: Addition is commutative. For any m and n,
+             m + n = n + m
 
-    Proof: (* FILL IN HERE *)
+    Proof: By induction on n. 
+           + In the base case, we must show 0 + m = m + 0. 
+             By induciton on m, the base case 0 + 0 = 0 + 0, 
+             follows from the definition of addition. 
+             In the inductive case, we have that 0 + m' = m' + 0, 
+             and need to show that 0 + S m' = S m' + 0. By the 
+             definition of +, this reduces to 
+             S(0 + m') = S m' + 0 which follows from the 
+             induction hypothesis.
+           + From the inductive hypothesis, we have that
+             n' + m = m + n'
+             and we need to show that 
+             S n' + m = m + S n'
+             From the definition of +, our goal reduces to
+             S(n' + m) = m + S n'
+             This is solvable by using the induction
+             hypothesis and the property 
+             plus_n_Sm: S (n + m) = n + (S m).
 *)
 
 (* Do not modify the following line: *)
@@ -470,8 +511,11 @@ Definition manual_grade_for_plus_comm_informal : option (nat*string) := None.
 
     Theorem: [true = n =? n] for any [n].
 
-    Proof: (* FILL IN HERE *)
-
+    Proof: By induction on n. The base case follows from 
+           the definition of =?. In the inductive case, 
+           we have the hypothesis true = n' =? n' and need 
+           to show that true = S n' =? S n' which reduces 
+           to the IH.
     [] *)
 
 (* ################################################################# *)
@@ -485,7 +529,11 @@ Definition manual_grade_for_plus_comm_informal : option (nat*string) := None.
 Theorem plus_swap : forall n m p : nat,
   n + (m + p) = m + (n + p).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m p. rewrite plus_assoc.
+  assert (H : n + m = m + n). 
+  { rewrite plus_comm. reflexivity. }
+  rewrite H. rewrite plus_assoc. reflexivity.
+Qed.
 
 (** Now prove commutativity of multiplication.  (You will probably
     need to define and prove a separate subsidiary theorem to be used
