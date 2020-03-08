@@ -723,7 +723,7 @@ Proof.
   assert (H' : m = n). { apply eqb_true. apply H. }
   rewrite H'. reflexivity.
 Qed.
-(*HERE*)
+
 (** **** Exercise: 3 stars, standard, recommended (gen_dep_practice)  
 
     Prove this by induction on [l]. *)
@@ -732,7 +732,14 @@ Theorem nth_error_after_last: forall (n : nat) (X : Type) (l : list X),
      length l = n ->
      nth_error l n = None.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n X l H. generalize dependent n.
+  induction l.
+  + reflexivity.
+  + intros n H. destruct n.
+    - inversion H.
+    - simpl. inversion H. rewrite H1. apply IHl.
+      apply H1.
+Qed.
 (** [] *)
 
 (* ################################################################# *)
@@ -917,7 +924,23 @@ Theorem combine_split : forall X Y (l : list (X * Y)) l1 l2,
   split l = (l1, l2) ->
   combine l1 l2 = l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X Y l.
+  induction l as [|h t IHl].
+  - (* l = nil *) intros l1 l2 H. inversion H. reflexivity.
+  - (* l = h :: t *)
+    destruct h as (x, y).
+    simpl.
+    destruct (split t).
+    intros l1 l2 H.
+    inversion H.
+    induction l1 as [|h2 t2 IHl2].
+    + (* l1 = nil *) inversion H1.
+    + (* l1 = h2 :: t2 *)
+      inversion H1. (*inversion H2.*) simpl.
+      rewrite -> IHl. reflexivity.
+      rewrite -> H4.
+      reflexivity.
+Qed.
 (** [] *)
 
 (** The [eqn:] part of the [destruct] tactic is optional: We've chosen
@@ -954,7 +977,7 @@ Abort.
 (** ... then we are stuck at this point because the context does
     not contain enough information to prove the goal!  The problem is
     that the substitution performed by [destruct] is quite brutal --
-    in this case, it thows away every occurrence of [n =? 3], but we
+    in this case, it throws away every occurrence of [n =? 3], but we
     need to keep some memory of this expression and how it was
     destructed, because we need to be able to reason that, since [n =?
     3 = true] in this branch of the case analysis, it must be that [n
@@ -993,7 +1016,19 @@ Theorem bool_fn_applied_thrice :
   forall (f : bool -> bool) (b : bool),
   f (f (f b)) = f b.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros f b. destruct b.
+  + destruct (f true) eqn:H.
+    - rewrite H. apply H.
+    - destruct (f false) eqn:H2.
+      * rewrite H. reflexivity.
+      * rewrite H2. reflexivity.
+  + destruct (f false) eqn:H.
+    - destruct (f true) eqn:H2.
+      * rewrite H2. reflexivity.
+      * rewrite H. reflexivity.
+    - rewrite H. rewrite H.
+      reflexivity.
+Qed. 
 (** [] *)
 
 (* ################################################################# *)
@@ -1069,7 +1104,14 @@ Proof.
 Theorem eqb_sym : forall (n m : nat),
   (n =? m) = (m =? n).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction n.
+  + destruct m.
+    - reflexivity.
+    - reflexivity.
+  + destruct m.
+    - reflexivity.
+    - simpl. apply IHn.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, advanced, optional (eqb_sym_informal)  
