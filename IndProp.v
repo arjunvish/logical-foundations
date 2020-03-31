@@ -1147,7 +1147,7 @@ Qed.
 
 Example reg_exp_ex2 : [1; 2] =~ App (Char 1) (Char 2).
 Proof.
-  apply (MApp [1] _ [2]).
+  apply (MApp [1] _ [2] _).
   - apply MChar.
   - apply MChar.
 Qed.
@@ -1164,7 +1164,7 @@ Example reg_exp_ex3 : ~ ([1; 2] =~ Char 1).
 Proof.
   intros H. inversion H.
 Qed.
-
+(*HERE*)
 (** We can define helper functions for writing down regular
     expressions. The [reg_exp_of_list] function constructs a regular
     expression that matches exactly the list that it receives as an
