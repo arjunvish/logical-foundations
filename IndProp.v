@@ -1164,13 +1164,13 @@ Example reg_exp_ex3 : ~ ([1; 2] =~ Char 1).
 Proof.
   intros H. inversion H.
 Qed.
-(*HERE*)
+
 (** We can define helper functions for writing down regular
     expressions. The [reg_exp_of_list] function constructs a regular
     expression that matches exactly the list that it receives as an
     argument: *)
 
-Fixpoint reg_exp_of_list {T} (l : list T) :=
+Fixpoint reg_exp_of_list {T} (l : list T) : reg_exp :=
   match l with
   | [] => EmptyStr
   | x :: l' => App (Char x) (reg_exp_of_list l')
@@ -1205,7 +1205,7 @@ Qed.
 
 (** (Note the use of [app_nil_r] to change the goal of the theorem to
     exactly the same shape expected by [MStarApp].) *)
-
+(*HERE*)
 (** **** Exercise: 3 stars, standard (exp_match_ex1)  
 
     The following lemmas show that the informal matching rules given
