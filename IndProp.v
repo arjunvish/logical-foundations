@@ -1205,7 +1205,7 @@ Qed.
 
 (** (Note the use of [app_nil_r] to change the goal of the theorem to
     exactly the same shape expected by [MStarApp].) *)
-(*HERE*)
+
 (** **** Exercise: 3 stars, standard (exp_match_ex1)  
 
     The following lemmas show that the informal matching rules given
@@ -1215,13 +1215,19 @@ Qed.
 Lemma empty_is_empty : forall T (s : list T),
   ~ (s =~ EmptySet).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros T s H.
+  inversion H.
+Qed.
 
 Lemma MUnion' : forall T (s : list T) (re1 re2 : @reg_exp T),
   s =~ re1 \/ s =~ re2 ->
   s =~ Union re1 re2.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros T s re1 re2 H.
+  destruct H.
+  + apply (MUnionL s re1 re2 H).
+  + apply (MUnionR re1 s re2 H).
+Qed.
 
 (** The next lemma is stated in terms of the [fold] function from the
     [Poly] chapter: If [ss : list (list T)] represents a sequence of
@@ -1232,7 +1238,13 @@ Lemma MStar' : forall T (ss : list (list T)) (re : reg_exp),
   (forall s, In s ss -> s =~ re) ->
   fold app ss [] =~ Star re.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros T ss re H. induction ss.
+  + simpl. apply (MStar0 re).
+  + simpl. apply (MStarApp x (fold app ss []) re).
+    - apply H. simpl. left. reflexivity.
+    - apply IHss. intros s H1. apply H. simpl.
+      right. apply H1.
+Qed.
 (** [] *)
 
 (** **** Exercise: 4 stars, standard, optional (reg_exp_of_list_spec)  
@@ -1242,8 +1254,23 @@ Proof.
 
 Lemma reg_exp_of_list_spec : forall T (s1 s2 : list T),
   s1 =~ reg_exp_of_list s2 <-> s1 = s2.
-Proof.
-  (* FILL IN HERE *) Admitted.
+Proof. 
+  split.
+  - generalize dependent s1.
+    induction s2.
+    + intros. simpl in H. inversion H. reflexivity.
+    + intros. simpl in H. inversion H. apply IHs2 in H4. 
+      inversion H3. rewrite H4. simpl. reflexivity.
+  - generalize dependent s2.
+    induction s1.
+    + intros. rewrite <- H. simpl. apply MEmpty.
+    + intros. rewrite <- H. simpl.
+      assert (H1 : x :: s1 = [x] ++ s1).
+      { reflexivity. }
+      rewrite H1. apply MApp.
+      * apply MChar. 
+      * apply IHs1. reflexivity.
+Qed.
 (** [] *)
 
 (** Since the definition of [exp_match] has a recursive
@@ -1283,9 +1310,11 @@ Proof.
         | re | s1 s2 re Hmatch1 IH1 Hmatch2 IH2].
   (* WORKED IN CLASS *)
   - (* MEmpty *)
-    apply Hin.
+    simpl. inversion Hin.
   - (* MChar *)
-    apply Hin.
+    simpl. inversion Hin.
+    + left. apply H.
+    + inversion H.
   - simpl. rewrite In_app_iff in *.
     destruct Hin as [Hin | Hin].
     + (* In x s1 *)
@@ -1325,14 +1354,55 @@ Qed.
     Write a recursive function [re_not_empty] that tests whether a
     regular expression matches some string. Prove that your function
     is correct. *)
-
-Fixpoint re_not_empty {T : Type} (re : @reg_exp T) : bool
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint re_not_empty {T : Type} (re : @reg_exp T) : bool :=
+  match re with
+  | EmptySet => false
+  | EmptyStr => true
+  | Char x => true
+  | App x y => (re_not_empty x) && (re_not_empty y) (*This doesn't make sense but works*)
+  | Union x y => (re_not_empty x) || (re_not_empty y)
+  | Star r => true
+end.
 
 Lemma re_not_empty_correct : forall T (re : @reg_exp T),
   (exists s, s =~ re) <-> re_not_empty re = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros T re. split.
+  - induction re.
+    + intros [s H]. inversion H.
+    + reflexivity.
+    + reflexivity.
+    + intros [s H]. inversion H. simpl.
+      apply andb_true_iff. split.
+      * apply IHre1. exists s1. apply H3.
+      * apply IHre2. exists s2. apply H4.
+    + intros [s H]. inversion H.
+      * simpl. 
+        apply orb_true_iff. left.
+        apply IHre1. exists s. apply H2. 
+      * simpl.
+        apply orb_true_iff. right.
+        apply IHre2. exists s. apply H1.
+    + reflexivity.
+  - induction re.
+    + intros. discriminate H.
+    + intros. exists []. apply MEmpty.
+    + intros. exists [t]. apply MChar.
+    + intros. inversion H.
+      apply andb_true_iff in H1.
+      destruct H1 as [H1 H2].
+      apply IHre1 in H1. apply IHre2 in H2.
+      destruct H1 as [m H1].
+      destruct H2 as [n H2].
+      exists (m ++ n). apply MApp. apply H1.
+      apply H2.
+    + intros. inversion H.
+      apply orb_true_iff in H1.
+      destruct H1 as [H1 | H2].
+      * induction IHre1. exists x. apply MUnionL. apply H0. apply H1.
+      * induction IHre2. exists x. apply MUnionR. apply H0. apply H2.
+    + intros. exists []. apply MStar0.
+Qed.
 (** [] *)
 
 (* ================================================================= *)
@@ -1458,7 +1528,7 @@ Proof.
       * rewrite H0. reflexivity.
       * apply H1.
 Qed.
-
+(*HERE*)
 (** **** Exercise: 4 stars, standard, optional (exp_match_ex2)  *)
 
 (** The [MStar''] lemma below (combined with its converse, the
