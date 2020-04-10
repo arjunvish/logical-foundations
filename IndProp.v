@@ -1541,7 +1541,27 @@ Lemma MStar'' : forall T (s : list T) (re : reg_exp),
     s = fold app ss []
     /\ forall s', In s' ss -> s' =~ re.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros.
+  remember (Star re) as re'.
+  induction H.
+  - discriminate.
+  - discriminate.
+  - discriminate.
+  - discriminate.
+  - discriminate.
+  - exists []. simpl. split.
+    + reflexivity.
+    + intros. inversion H.
+  - inversion Heqre'. 
+    apply IHexp_match2 in Heqre'.
+    destruct Heqre' as [ss [H3 H4]].
+    exists ([s1] ++ ss).
+    split.
+    + simpl. rewrite <- H3. reflexivity.
+    + simpl. intros. rewrite H2 in H. destruct H1. 
+      * rewrite H1 in H. apply H.
+      * apply H4. apply H1.
+Qed.
 (** [] *)
 
 (** **** Exercise: 5 stars, advanced (pumping)  
@@ -1625,6 +1645,82 @@ Proof.
        | re | s1 s2 re Hmatch1 IH1 Hmatch2 IH2 ].
   - (* MEmpty *)
     simpl. omega.
+  - (* MChar *)
+    simpl. omega.
+  - (* MApp *)
+    simpl. intros. 
+    rewrite app_length in H.
+    apply Nat.add_le_cases in H.
+    destruct H as [H | H].
+    + apply IH1 in H. destruct H as [s3 [s4 [s5 [H1 [H2 H3]]]]].
+      exists s3, s4, (s5 ++ s2). rewrite H1. 
+      rewrite <- app_assoc. rewrite <- app_assoc. split.
+      * reflexivity.
+      * split.
+        { apply H2. }
+        { intros. rewrite -> app_assoc. rewrite -> app_assoc. 
+          rewrite <- app_assoc with (m := (napp m s4)).
+          apply MApp. apply H3. apply Hmatch2. }
+    + apply IH2 in H. destruct H as [s3 [s4 [s5 [H1 [H2 H3]]]]].
+      exists (s1 ++ s3), s4, s5. rewrite H1.
+      rewrite <- app_assoc. split.
+      * reflexivity.
+      * split.
+        { apply H2. }
+        { intros. rewrite <- app_assoc.
+          apply MApp. apply Hmatch1.
+          apply H3. }
+  - (* MUnionL *)
+    simpl. intros.
+    apply le_trans with (n := pumping_constant re1) in H.
+    + apply IH in H. destruct H as [s2 [s3 [s4 [H1 [H2 H3]]]]].
+      exists s2, s3, s4. rewrite H1. split.
+      * reflexivity.
+      * split.
+        { apply H2. }
+        { intros. apply MUnionL. apply H3. }
+    + apply le_plus_l.
+  - (* MUnionR *)
+    simpl. intros. 
+    rewrite plus_comm in H.
+    apply le_trans with (n := pumping_constant re2) in H.
+    apply IH in H. destruct H as [s1 [s3 [s4 [H1 [H2 H3]]]]].
+    + exists s1, s3, s4. rewrite H1. split.
+      * reflexivity.
+      * split.
+        { apply H2. }
+        { intros. apply MUnionR. apply H3. }
+    + apply le_plus_l.
+  - (* MStar0 *)
+    simpl. intros. inversion H.
+  - (* MStarApp *)
+    simpl. intros. rewrite app_length in H.
+    destruct s1.
+    + destruct s2.
+      * inversion H.
+      * simpl in H. simpl in IH2. apply IH2 in H.
+        destruct H as [s1 [s3 [s4 [H1 [H2 H3]]]]].
+        rewrite H1. simpl. exists s1, s3, s4. split.
+        { reflexivity. }
+        { split.
+          - apply H2.
+          - apply H3. }
+    + exists [], (x :: s1), s2. split.
+      * reflexivity. 
+      * split.
+        { intro. discriminate. }
+        { intro. simpl. apply star_app.
+          - induction m.
+            + simpl. apply MStar0.
+            + remember (x :: s1) as s1'.
+              simpl. apply star_app.
+              rewrite <- app_nil_r with (l := s1').
+              apply MStarApp.
+              apply Hmatch1.
+              apply MStar0.
+              apply IHm.
+          - apply Hmatch2. }
+Qed.
   (* FILL IN HERE *) Admitted.
 
 End Pumping.
