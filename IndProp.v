@@ -1528,7 +1528,7 @@ Proof.
       * rewrite H0. reflexivity.
       * apply H1.
 Qed.
-(*HERE*)
+
 (** **** Exercise: 4 stars, standard, optional (exp_match_ex2)  *)
 
 (** The [MStar''] lemma below (combined with its converse, the
@@ -1721,7 +1721,6 @@ Proof.
               apply IHm.
           - apply Hmatch2. }
 Qed.
-  (* FILL IN HERE *) Admitted.
 
 End Pumping.
 (** [] *)
@@ -1796,7 +1795,15 @@ Qed.
 (** **** Exercise: 2 stars, standard, recommended (reflect_iff)  *)
 Theorem reflect_iff : forall P b, reflect P b -> (P <-> b = true).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros P b H.
+  induction H.
+  - split.
+    + reflexivity.
+    + intros. apply H.
+  - split.
+    + intros. apply H in H0. exfalso. apply H0.
+    + intros. discriminate H0.
+Qed.
 (** [] *)
 
 (** The advantage of [reflect] over the normal "if and only if"
@@ -1809,7 +1816,7 @@ Lemma eqbP : forall n m, reflect (n = m) (n =? m).
 Proof.
   intros n m. apply iff_reflect. rewrite eqb_eq. reflexivity.
 Qed.
-
+(*HERE*)
 (** A smoother proof of [filter_not_empty_In] now goes as follows.
     Notice how the calls to [destruct] and [apply] are combined into a
     single call to [destruct]. *)
